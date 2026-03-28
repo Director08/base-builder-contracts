@@ -1,91 +1,136 @@
-import hre from "hardhat";
-import { parseEther } from "viem";
+import { network } from "hardhat";
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function deployWithRetry(
+  viem: any,
+  name: string,
+  args?: any[],
+  retries = 3
+): Promise<any> {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const contract = args
+        ? await viem.deployContract(name, args)
+        : await viem.deployContract(name);
+      return contract;
+    } catch (error: any) {
+      if (attempt === retries) throw error;
+      console.log(`  Retrying in 5s (attempt ${attempt}/${retries})...`);
+      await sleep(5000);
+    }
+  }
+}
 
 async function main() {
-  const [deployer] = await hre.viem.getWalletClients();
-  const publicClient = await hre.viem.getPublicClient();
+  const { viem } = await network.connect();
+  const [walletClient] = await viem.getWalletClients();
+  const DELAY = 3000;
 
-  console.log("Deploying all 13 contracts...");
-  console.log("Deployer:", deployer.account.address);
+  console.log("Deploying all 13 contracts to Base mainnet...");
+  console.log("Deployer:", walletClient.account.address);
 
   // 1. BaseToken (ERC-20)
-  const baseToken = await hre.viem.deployContract("BaseToken", [
+  console.log("\n1/13 - Deploying BaseToken...");
+  const baseToken = await deployWithRetry(viem, "BaseToken", [
     "Base Builder Token",
     "BBT",
     1_000_000n,
   ]);
-  console.log("1. BaseToken:", baseToken.address);
+  console.log(`  Done: ${baseToken.address}`);
 
   // 2. BaseNFT (ERC-721)
-  const baseNFT = await hre.viem.deployContract("BaseNFT", [
+  await sleep(DELAY);
+  console.log("2/13 - Deploying BaseNFT...");
+  const baseNFT = await deployWithRetry(viem, "BaseNFT", [
     "Base Builder NFT",
     "BBNFT",
     "https://api.example.com/nft/",
   ]);
-  console.log("2. BaseNFT:", baseNFT.address);
+  console.log(`  Done: ${baseNFT.address}`);
 
   // 3. OnchainRegistry
-  const registry = await hre.viem.deployContract("OnchainRegistry");
-  console.log("3. OnchainRegistry:", registry.address);
+  await sleep(DELAY);
+  console.log("3/13 - Deploying OnchainRegistry...");
+  const registry = await deployWithRetry(viem, "OnchainRegistry");
+  console.log(`  Done: ${registry.address}`);
 
   // 4. PaymentSplitter
-  const splitter = await hre.viem.deployContract("PaymentSplitter", [
-    [deployer.account.address, "0x000000000000000000000000000000000000dEaD"],
+  await sleep(DELAY);
+  console.log("4/13 - Deploying PaymentSplitter...");
+  const splitter = await deployWithRetry(viem, "PaymentSplitter", [
+    [walletClient.account.address, "0x000000000000000000000000000000000000dEaD"],
     [80n, 20n],
   ]);
-  console.log("4. PaymentSplitter:", splitter.address);
+  console.log(`  Done: ${splitter.address}`);
 
   // 5. TimeLock
-  const timelock = await hre.viem.deployContract("TimeLock");
-  console.log("5. TimeLock:", timelock.address);
+  await sleep(DELAY);
+  console.log("5/13 - Deploying TimeLock...");
+  const timelock = await deployWithRetry(viem, "TimeLock");
+  console.log(`  Done: ${timelock.address}`);
 
   // 6. MultiSig
-  const multisig = await hre.viem.deployContract("MultiSig", [
-    [deployer.account.address],
+  await sleep(DELAY);
+  console.log("6/13 - Deploying MultiSig...");
+  const multisig = await deployWithRetry(viem, "MultiSig", [
+    [walletClient.account.address],
     1n,
   ]);
-  console.log("6. MultiSig:", multisig.address);
+  console.log(`  Done: ${multisig.address}`);
 
   // 7. Vault
-  const vault = await hre.viem.deployContract("Vault");
-  console.log("7. Vault:", vault.address);
+  await sleep(DELAY);
+  console.log("7/13 - Deploying Vault...");
+  const vault = await deployWithRetry(viem, "Vault");
+  console.log(`  Done: ${vault.address}`);
 
   // 8. Staking
-  const staking = await hre.viem.deployContract("Staking", [
+  await sleep(DELAY);
+  console.log("8/13 - Deploying Staking...");
+  const staking = await deployWithRetry(viem, "Staking", [
     baseToken.address,
     baseToken.address,
-    1000000000000000n, // 1e15
+    1000000000000000n,
   ]);
-  console.log("8. Staking:", staking.address);
+  console.log(`  Done: ${staking.address}`);
 
   // 9. SimpleDAO
-  const dao = await hre.viem.deployContract("SimpleDAO", [
-    604800n, // 7 days in seconds
-  ]);
-  console.log("9. SimpleDAO:", dao.address);
+  await sleep(DELAY);
+  console.log("9/13 - Deploying SimpleDAO...");
+  const dao = await deployWithRetry(viem, "SimpleDAO", [604800n]);
+  console.log(`  Done: ${dao.address}`);
 
   // 10. AirdropDistributor
-  const airdrop = await hre.viem.deployContract("AirdropDistributor");
-  console.log("10. AirdropDistributor:", airdrop.address);
+  await sleep(DELAY);
+  console.log("10/13 - Deploying AirdropDistributor...");
+  const airdrop = await deployWithRetry(viem, "AirdropDistributor");
+  console.log(`  Done: ${airdrop.address}`);
 
   // 11. CloneFactory
-  const cloneFactory = await hre.viem.deployContract("CloneFactory");
-  console.log("11. CloneFactory:", cloneFactory.address);
+  await sleep(DELAY);
+  console.log("11/13 - Deploying CloneFactory...");
+  const cloneFactory = await deployWithRetry(viem, "CloneFactory");
+  console.log(`  Done: ${cloneFactory.address}`);
 
   // 12. FeeRouter
-  const feeRouter = await hre.viem.deployContract("FeeRouter", [
-    deployer.account.address,
+  await sleep(DELAY);
+  console.log("12/13 - Deploying FeeRouter...");
+  const feeRouter = await deployWithRetry(viem, "FeeRouter", [
+    walletClient.account.address,
     250n,
     50n,
   ]);
-  console.log("12. FeeRouter:", feeRouter.address);
+  console.log(`  Done: ${feeRouter.address}`);
 
   // 13. Escrow
-  const escrow = await hre.viem.deployContract("Escrow");
-  console.log("13. Escrow:", escrow.address);
+  await sleep(DELAY);
+  console.log("13/13 - Deploying Escrow...");
+  const escrow = await deployWithRetry(viem, "Escrow");
+  console.log(`  Done: ${escrow.address}`);
 
   console.log("\n=== All 13 contracts deployed! ===");
-  console.log("Deployer:", deployer.account.address);
+  console.log("Deployer:", walletClient.account.address);
 }
 
 main().catch((error) => {
