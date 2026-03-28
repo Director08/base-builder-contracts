@@ -23,37 +23,21 @@ A collection of foundational smart contract primitives for building on Base. Eac
 ## Setup
 
 ```bash
-# Install Foundry
-curl -L https://foundry.paradigm.xyz | bash
-foundryup
-
-# Install dependencies
-forge install foundry-rs/forge-std --no-commit
-
-# Build
-forge build
-
-# Test
-forge test -vvv
+npm install
+npx hardhat compile
+npx hardhat test
 ```
 
-## Deploy to Base
+## Deploy to Base Mainnet
 
 ```bash
-# Set environment
-export PRIVATE_KEY=your_private_key_here
-export BASESCAN_API_KEY=your_basescan_key  # optional, for verification
-
-# Deploy all contracts
-forge script script/DeployAll.s.sol --rpc-url https://mainnet.base.org --broadcast
-
-# Verify on Basescan (optional)
-forge verify-contract <ADDRESS> src/BaseToken.sol:BaseToken --chain base
+# Keys stored securely via Hardhat Keystore (never exposed in env)
+npx hardhat run scripts/deploy-all.ts --network base
 ```
 
 ## Architecture
 
-All contracts are written in Solidity 0.8.24 with optimizer enabled. No external dependencies beyond forge-std for testing and deployment scripting.
+All contracts are written in Solidity ^0.8.24 with optimizer enabled. No external dependencies.
 
 Each contract follows these principles:
 - Minimal, self-contained implementations
