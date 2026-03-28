@@ -14,8 +14,11 @@
   "type": "module",
   "devDependencies": {
     "@nomicfoundation/hardhat-keystore": "^3.0.4",
+    "@nomicfoundation/hardhat-mocha": "^3.0.14",
     "@nomicfoundation/hardhat-network-helpers": "^3.0.3",
     "@nomicfoundation/hardhat-viem": "^3.0.2",
+    "@types/chai": "^5.2.3",
+    "chai": "^6.2.2",
     "hardhat": "^3.1.7"
   }
 }

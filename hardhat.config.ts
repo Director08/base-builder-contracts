@@ -1,9 +1,10 @@
 import { configVariable, defineConfig } from "hardhat/config";
 import hardhatKeystore from "@nomicfoundation/hardhat-keystore";
 import hardhatViem from "@nomicfoundation/hardhat-viem";
+import hardhatMocha from "@nomicfoundation/hardhat-mocha";
 
 export default defineConfig({
-  plugins: [hardhatKeystore, hardhatViem],
+  plugins: [hardhatKeystore, hardhatViem, hardhatMocha],
   solidity: {
     version: "0.8.28",
     settings: {
